@@ -1,0 +1,268 @@
+[Chapter 2] URLs and Resources
+
+<Navigating the Internet's Resources>
+	- Most URLs have the same "scheme://server location/path" structure.
+		Ex) http://www.joes-hardware.com/seasonal/index-fall.html
+			+ First part : URL scheme --> scheme tells a web client how to access the resource. This case, the URL says to use the HTTP protocol.
+			+ Second part : Server location --> This tells the web client where the resource is hosted.
+			+ Third part : Resource path --> The path tells what particular local resource on the server is being requested.
+
+<Dark Days Before URLs>
+	- URLs have provided a means for applications to be aware of how to access a resource.
+
+<URL Syntax>
+	- Most URL schemes base their URL syntax on this nine-part general format
+		Ex) <scheme>://<user>:<password>@<host>:<port>/<path>;<params>?<query>#<frag>
+
+	* Three most importatn parts of a URL are the scheme, the host, and the path.
+
+	- General URL Components
+		1) scheme
+			+ which protocol to use when accessing a server to get a resource
+			+ Default Value : None
+
+		2) user
+			+ The username some schemes require to access a resource
+			+ Default Value : anonymous
+
+		3) password
+			+ The password that may be included after the username, separted by a colon (:)
+			+ Default Value :  <Email address>
+
+		4) host
+			+ The hostname or dotted IP address of the server hosting the resource
+			+ Default Value : None
+
+		5) port
+			+ The port number on which the server hosting the resource is listening. Many schemes have default port numbers (the default port number for HTTP is 80)
+			+ Default Value : Scheme-specific
+
+		6) path
+			+ The local name for the resource on the server, separted from the previous URL components by a slash (/).
+			+ Syntax of the path component is server-and scheme-specific.
+			+ Default Value : None
+
+		7) params
+			+ Used by some schemes to specify input parameters.
+			+ Params are name / value pairs.
+			+ URL can contain multiple params fields, spearated from themselves and the rest of the path by semicolons (;).
+			+ Default Value : None
+
+		8) query
+			+ Used by some schemes to pass paramters to active applications (such as databases, bulletin boards, search engines, and other internet gateways).
+			+ Separated from the rest of the URL by the "?" character.
+			+ Default Value : None
+
+		9) frag
+			+ Name for a piece or part of the resource.
+			+ The frag field is not passed to the server when referencing the object; it is used internally by the client.
+			+ Separated from the rest of the URL by the "#" character.
+			+ Default Value : None
+
+<Schemes: What Protocol to Use>
+	- Scheme : main identifier of how to access a given resource; it tells the application interpreting the URL what protocol it needs to speak.
+	- In our simple HTTP URL, the scheme is simply "http".
+	- Scheme component must start with an alphabetic character, and it is separted from the rest of the URL by the first ":".
+	- Scheme names are case insensitive. (http:// == HTTP://)
+
+<Hosts and Ports>
+	- Host: identifies the host machine on the Internet that has access to the resource.
+		Ex) Host name("http://www.joes-hardware.com/index.html") or as an IP address(http://161.58.228.45:80/index.html).
+	- Port: identifies the network port on which the server is listening.
+		+ For Http, which uses the underlying TCP protocol, the default port is 80.
+
+<Usernames and Passwords>
+	- Most servers require a username and password before you can access data through them.
+		+ FTP servers are a common example.
+			Ex) ftp://ftp.prep.ai.mit.edu/pub/gnu							// no user or password component(just standard scheme, host, and path)
+				ftp://anonymous@ftp.prep.ai.mit.edu/pub/gnu					
+				ftp://anonymous:my_passwd@ftp.prep.ai.mit.edu/pub/gnu		// separates by ":" character
+				http://joe:joepasswd@www.joes-hardware.com/sales_info.txt
+
+			* if a URL scheme requires a username and password, and without specifying a username and password, it will insert "anonymous" for username and send a default password(Internet Explorer sends "IEUser", while Netscape Navigator sends "mozilla")
+
+<Paths>
+	- specifies where on the server machine the resource lives.
+	- often resembles a hierarchial filesystem path
+		Ex) http://www.joes-hardware.com:80/seasonal/index-fall.html
+			--> path: /seasonal/index-fall.html (resembles a filesystem path on a Unix filesystem.)
+
+	- The path is the info that the server needs to locate the resource.
+	- Path component for HTTP URLs can be divided into path segments separated by "/" characters.
+	- Each path segment can have its own params component
+
+<Parameters>
+	- URLs have a params component.
+	- list of name/value pairs in the URL, separated from the rest of the URL by ";" characters.
+	- provide applications with any additional information that they need to access the resource.
+		Ex) ftp://prep.ai.mit.edu/pub/gnu;type=d
+			--> one param, type=d
+				+ name of the param : "type"
+				+ value is "d"
+
+	- path component for HTTP URLs can be broken into path segments. Each segment can have its own params
+		Ex) http://www.joes-hardware.com/hammers;sale=false/index.html;graphics=true
+			--> there are two path segments, hammers and index.html
+				+ hammers path segment has the param sale, and its value is false.
+				+ index.html path segment has the param grphics, and its value is true.
+
+<Query Strings>
+	- narrows down the type of resource being requested.
+		Ex) http://www.joes-hardware.com/inventory-check.cgi?item=12731
+			--> query a web database gateway to see if item number 12731 is available
+
+	- query component : everything to the right of the question mark (?)
+	- query component of the URL is passed along to a gateway resource, with the path component of the URL identifying the gateway resource.
+	- By convention, many gateways expect the query string to be formatted as a seires of "name=value" pairs, separated by "&" characters.
+		Ex) http://www.joes-hardware.com/inventory-check.cgi?item=12731&color=blue
+			--> two name/value pairs in the query component: item=12731, and color=blue.
+
+<Fragments>
+	- URLs support a frag component to identify pieces within a resource.
+	- A fragment dangles off the right-hand side of a URL, preceded by a # character.
+		EX) http://www.joes-hardware.com/tools.html#drills
+			--> the fragment drills references a portion of the /tools.html web page located on the Joe's Hardware web server.
+			--> the portion is named "drills".
+
+		* clients don't pass fragments along to servers. After your browser gets the entire resource from the server, it then uses the fragment to display the part of the resource in which you are interested.
+
+<URL shortcuts>
+	- Relative URLs are a convenient shorthand for specifying a resource within a resource.
+	- Many browsers also support "automatic expansion" of URLs
+		+ user can type in a key (memorable) part of a URL, and the browser fills in the rest.
+
+<Relative URLs>
+	- URLs come in two flavors: absolute and relative.
+	- absolute URL: you have all the information you need to access a resource.
+	- relative URL: incomplete URL.
+		+ base URL (To get all the info needed to access a resource from a reltaive URL, you must interpret it relative to another URL, called its base)
+	- convenient shorthand notation for URLs.
+	- they are only fragments or pieces of URLs.
+
+<Base URLs>
+	- it serves as a point of reference for the relative URL.
+	- it can come from a few places
+		1. Explicitly provided in the resource
+			+ Some resources explicityly specify the base URL.
+		2. Base URL of the encapsulating resource
+			+ If a relative URL is found in a resource that does not explictly specify a base URL, it can use the URL of the resource in which it is embedded as a base.
+		3. No base URL
+			+ In some instances, there is no base URL. (This means that you have an absolute URL)
+			+ sometimes you may just have an incomplete or broken URL.
+
+<Resolving relative references>
+	- Decomposing the URL: parsing the URL, breaking it up into its components.
+
+<Expandomatic URLs>
+	- Some browsers try to expand URLs automatically, either after you submit the URL or while you're typing.
+	- "expandomatic" features com in two flavors:
+		1. Hostname expansion
+			+ In hostname expansion, the browser can often expand the hostname you type in into the full hostname without your help, jsut by using some simple heuristics.
+				Ex)	If you type "yahoo" in the address box, your browser can automatically insert "www." and ".com" onto the hostname, creating "www.yahoo.com".
+
+		2. History expansion
+			+ Store a history of the URLs that you have visited in the past.
+			+ As you type in the URL, they can offer you completed choices to select from by matching what you type to the prefixes of the URLs in your history.
+				Ex) If you were typing in the start of a URL that you had visited previously, such as http://www.joes-, your browser could suggest http://www.joes-hardware.com. You could then select that instead of typing out the complete URL.
+
+<Shady Characters>
+	- URLS were designed to be portable
+	- Safe transmission: URLs can be transmitted without the risk of losing information.
+	- URLs also need to be complete(URL designers realized there would be times when people would want URLs to contain binary data or characters outside of the universally safe alphabet. So, an escape mechanism was added, allowing unsafe chracters to be encoded into safe characters for transport.)
+
+<The URL Character Set>
+	- many computer applicatinos have used the US-ASCII character set.
+		+ It uses 7 bits to represent most keys available on an English typewriter and a few nonprinting control characters for text formatting and hardware signalling.
+		+ it is very portable, due to its long legacy. BUT it doesn't support the inflected characters common in European languages or the undreds of non-Romanic languages read by billions of people around the world.
+
+	- Some URLs many need to contain arbitrary binary data. (Recognizing the need for completeness)
+	- Escape sequences: allow the encoding of arbitrary character values or data using a restricted subset of the US-ASCII character set, yielding portability and completeness.
+
+<Encoding Mechanisms>
+	- Encoding simply represents the unsafe character by an "Escape" notation, consisting of a percent sign (%) followed by two hexadecimal digits that represent the ASCII code of the character.
+		
+		Ex) Some encoded character examples
+			Character: ~
+			ASCII Code: 126 (0x7E)
+			Example: %7E
+
+			Character: SPACE
+			ASCII Code: 32 (0x20)
+			Example: %20
+
+			Character: %
+			ASCII Code: 37 (0x25)
+			Example: %25
+
+<Character Restrictions>
+	- Several characters have been reserved to have special meaning inside of a URL
+		
+		Ex) Reserved and restricted characters
+			%				// Reserved as escape token for encoded characters.
+			/				// Reserved as delmiting splitting up path segments in the path component
+			.				// Reserved as path component
+			..				// Reserved as path component
+			#				// Reserved as fragment delimiter
+			?				// Reserved as query-string delimiter
+			;				// Reserved as params delimiter
+			:				// Reserved as delimit the scheme, user/password, and host/port components
+			$, +			// Reserved
+			@&=				// Reserved because they have special meaning in the context of some schemes
+			{}|\~[]`		// Restricted: unsafe handling by various transport agents, such as gateways
+			<>"				// Unsafe; should be encoded: these often have meaning outside the scope of the URL, such as delimiting the URL itself in a document.
+			0x00-0x1F, 0x7F // Restricted; these hex ranges fall within the nonprintable section of the US-ASCII character set.
+			> 0x7F			// Restricted; hex values fall within this range do not fall within the 7-bit range of the US-ASCII set.
+
+<Sea of Schemes>
+	- Common scheme formats on the Web.
+		Ex) Common scheme formats
+			1. http
+				+ Hyptertext Transfer Protocol conforms to the general URL format, except that there is no username or password.
+				+ The port defaults to 80 if omitted.
+				+ Basic form: http://<host>:<port>/<path>?<query>#<frag>
+					Ex) http://www.joes-hardware.com/index.html
+						http://www.joes-hardware.com:80/index.html
+			2. https
+				+ it uses Netscape's Secure Sockets Layer (SSL), providing end-to-end encryption of HTTP connections.
+				+ syntax is identical to that of HTTP, with a default port of 443.
+				+ Basic form: https://<host>:<port>/<path>?<query>#<frag>
+					Ex) https://www.joes-hardware.com/secure.html
+			3. mailto
+				+ Malito URLs refer to email addresses.
+				+ syntax for internet email addresses is documented in internet RFC 822.
+				+ Basic form: mailto:<RFC-822-addr-spec>
+					Ex) mailto:joe@joes-hardware.com
+			4. ftp
+				+ File Transfer Protocol URLs can be used to download and upload files on an FTP server and to obtain listings of the contents of a directory structure on an FTP server.
+				+ it has been around since before the advent of the Web and URLs.
+				+ Web applications have assimilated FTP as a data-access scheme.
+				+ Basic form: ftp //<user>:<password>@<host>:<port>/<path>;<params>
+					Ex) ftp //anonymous;joe%40joes-hardware.com@prep.ai.mit.edu:21/pub/gnu/
+			5. rstp, rstpu
+				+ RSTP URLs are identifiers for audio and video media resources that can be retrieved through the Real Time Streaming Protocol.
+				+ "u" denotes that the UDP protocol is used to retrieve the resource.
+				+ Basic form: rstp://<user>:<password>@<host>:<port>/<path>
+							  rstpu://<user>:<password>@<host>:<port>/<path>
+					Ex) rstp://www.joes-hardware.com:554/interview/cto_video
+			6. file
+				+ file scheme denotes files directly accessible on a given host machine (by local disk, a network filesystem, or some other file-sharing system)
+				+ Basic form: file://<host>/<path>
+					Ex) file://OFFICE-FS/policies/casual-fridays.doc
+			7. news
+				+ news scheme is used to access specific articles or newsgroups, as defined by RFC 1036.
+				+ news URL in itself does not contain sufficient information to locate the resource.
+				+ "@" character: reserved within a news URL and is used to distinguish between news URLs that refer to newsgroups and news URLs that refer to specific news articles.
+				+ Basic forms: news:<newsgroup>
+							   news:<news-article-id>
+					Ex) news:rec.arts startrek
+			8. telnet
+				+ telnet scheme is used to access interactive services. 
+				+ Basic form: telnet //<user>:<password>@<host>:<port>/
+					Ex) telnet //slurp:webhound@joes-hardware.com:23/
+
+<The Future>
+	- URLs are really addresses, not true names. (URL tells you where something is located, for the moment)
+
+
+
+
