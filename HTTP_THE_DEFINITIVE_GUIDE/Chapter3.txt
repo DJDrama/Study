@@ -1,0 +1,165 @@
+[Chapter 3] HTTP Messages
+
+<The Flow of Messages>
+	- Http Messages: blocks of data sent between HTTP applications.
+		+ data begin with some text meta-information
+			= meta-information: describes the message contents and meaning, followed by optional data.
+
+<Messages Commute Inbound to the Origin Server>
+	- HTTP uses the terms inbound and outbound to describe transactional direction.
+	- Messages travel inbound to the origin server, when work done, they travel outbound back to the user agent.
+		Ex) Client --- Inbound (to server) ---> GET /index.html HTTP/1.0 --> Server
+			Client <-- HTTP/1.0 200 OK ... <--- Outbound (to user agent) <-- Server
+
+<Messages Flow Downstream>
+	- All messages flow downstream, regardless of whether they are request messages or response messages.
+	- The sender of any message is upstream of the receiver.
+		Ex) Client --- Request (flowing downstream)  --> Server
+			Client <-- Response (flowing downstream) <-- Server
+
+		* All messages flow downstream
+		* The terms "upstream" and "downstream" relate only to the sender and receiver.
+		* We can't tell whehter a message is heading to the origin server or the client, because both are downstream.
+
+<The Parts of a Message>
+	- HTTP Messages consist of three parts
+		1. a start line : describing the message
+		2. block of headers : containing attributes
+		3. optional body : conataining data
+
+			Ex) Start line 	HTTP/1.0 200 OK
+				Headers 	Content-type: text/plain
+							Content-length: 19
+				Body 		Hi! I'm a message!
+
+		* start line and headers are just ASCII text, broken up by lines.
+		* Each line ends with a two-character end-of-line sequence, consisting of a carraiage return (ASCII 13) and a line-feed character (ASCII 10).
+		* This end-of-line sequence is writeen "CRLF"(carriage return line feed \r\n).
+		* The entire body or message body (or just plain "body") is simply an optional chunk of data.
+		* body can contain text or binary data or can be empty.
+
+<Message Syntax>
+	- All HTTP messages fall into two types: request messages and response messages.
+		+ Request messages: request an action from a web server.
+		+ Response messages: carry results of a request back to a client.
+
+		* both messages have the same basic message structure.
+
+	- Request Message format
+		====================================
+		<method> <request-url> <version>
+		<headers>
+
+		<entity-body>
+		====================================
+		+ method: action that the client wants the server to perform on the resource.
+			Ex) "GET", "POST", or "HEAD"
+		+ request-URL: complete URL naming the requested resource, or the path component of the URL.
+		+ version: version of HTTP that the message is using
+			Ex) HTTP/<major>.<minor>
+			* major, minor both are integers.
+
+	- Response Message format
+		====================================
+		<version> <status> <reason-phrase>
+		<headers>
+
+		<entity-body>
+		====================================
+		+ status-code: three-digit number describing what happened during the request.
+		+ resason-phrase: human-readable version of the numeric status code, consisting of all the text until the end-of-line sequence
+		+ headers: Zero or more headers, each of which is a name, followed by a colon (:), followed by optional whitespace, followed by a value, followed by a CRLF.
+		+ entire-body: contains a block of arbitrary data. Not all messages contain entity bodies.
+
+	* HTTP headers should always end in a blank line (bare CRLF), even if there are no headers and no entire body.
+
+<Start Lines>
+	- All HTTP messages begin with a start line.
+	- start line for a request message says what to do.
+	- start line for a response messages says what happened.
+
+	(Request line)
+		+ asks servers to do something to a resource.
+		+ start line for a request message, or request line, contains a method describing what operation the server should perform.
+		+ also request URL describing the resource on which to perform the method.
+		+ also includes an HTTP version which tells the server what dialect of HTTP the client is speaking.
+		* Prioer to HTTP/1.0, request lines were not required to contain an HTTP version.
+
+	(Response line)
+		+ carry status information and any resulting data from an operation back to a client.
+		+ start line for a response message, or response line, contains the HTTP version that the response message is using, a numeric status code, and a textual reason phrase describing the status of the operation.
+		* All fields are separated by whitespace.
+		* Prioer to HTTP/1.0, responses were not required to contain a response line.
+
+	(Methods)
+		+ begins the start line of requests, telling the server what to do.
+			Ex) GET /specials/saw-blade.gif HTTP/1.0 --> the method is GET
+		+ Common HTTP methods
+			(Method)	(Description)											(Message Body?)
+			GET			Get a document from the server.								No
+			HEAD 		Get just the headers for a document from the server.		No
+			POST		Send data to the server for processing.						Yes
+			PUT			Store the body of the request on the server.				Yes
+			TRACE 		Trace the message through proxy servers to the server.		No
+			OPTIONS 	Determine what methods can operate on a server.				No
+			DELETE		Remove a document from the server.							No
+
+			* Not all servers implement all seven of the above methods.
+
+	(Status codes)
+		+ status codes tell the client what happened.
+		+ status code classes
+			(Overall range)		(Defined range)		(Category)			(additional information)
+			100-199				100-101				Informational
+			200-299				200-206				Successful
+			300-399				300-305				Redirection			resource has been moved.
+			400-499				400-415				Client error		client did something wrong in the request.
+			500-599				500-505				Server error		something went awry on the server.
+
+		+ Common status codes
+			(Status code)		(Reason phrase)		(Meaning)
+			200 				OK					Success! Any requested data is in the response body.
+			401 				Unauthorized		You need to enter a username and password.
+			404 				Not Found			The server cannot find a resource for the requested URL.
+
+	(Reason phrases)
+		+ paired one-to-one with status codes.
+		+ provides human-readable version of the status code that application developers can pass along to their users to indicate what happened during the request.
+
+	(Version numbers)
+		+ they appear in both request and response messages start lines in the format HTTP/x.y
+		+ to tell each other what version of the protocol they conform to.
+			Ex) HTTP version 1.2 app communicating with an HTTP version 1.1 app should know that it should not use any new 1.2 features.
+
+		* HTTP/2.22 is higher than HTTP/2.3 because 22 is a larger number than 3
+
+<Headers>
+	- additional information to request and response messages.
+	- list of name/value pairs. 
+	
+	(Header classifications)
+		+ HTTP headers are classified into
+			1. General Headers
+				--> can appear in both request and response messages.
+			2. Request Headers
+				--> provides more information about the request.
+			3. Response Headers
+				--> provide more information about the response.
+			4. Entity Headers
+				--> describes body size and contents, or the resource itself.
+			5. Extension Headers
+				--> new headers that are not defined in the specification.
+
+			* Each HTTP header has a simple syntax: a name, followed by a colon (:), followed by optional whitespace, followed by the field value, followed by a CRLF.
+
+		+ Common header examples
+			(Header Example)							(Description)
+			Date: Tue, 3 Oct 1997 02:16:03 GMT			The date the server generated the response
+			Content-length: 15040						The entity body contains 15,040 bytes of data
+			Content-type: image/gif						The entity body is a GIF image
+			Accept: image/gif, image/jpeg, text/html	The client accpets GIF and JPEG images and HTML
+			
+
+
+
+
