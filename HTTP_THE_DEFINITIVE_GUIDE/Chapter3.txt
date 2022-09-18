@@ -158,7 +158,262 @@
 			Content-length: 15040						The entity body contains 15,040 bytes of data
 			Content-type: image/gif						The entity body is a GIF image
 			Accept: image/gif, image/jpeg, text/html	The client accpets GIF and JPEG images and HTML
-			
+
+	(Header continuation lines)
+		+ long header lines can be made more readable by breaking them into multiple lines, preceding each extra line with at least one space or tab character.
+
+<Entity Bodies>
+	- they are the payload of HTTP messages.
+	- things that HTTP was designed to transport
+	- HTTP messages can carry many kinds of digital data: images, video, HTML documents, software applications, credit card transactions, electronic mail, and so on.
+
+<Version 0.9 Messages>
+	- It was the starting point for the request and response messages that HTTP has today, but with a far simpler protocol.
+		+ HTTP/0.9 messages consisted of request which contained only the method and the request URL, and response contained only the entity. (No version information, No status code or reason phrase, and No headers)
+
+<Methods>
+	(Safe Methods)
+		+ GET and HEAD methods are said to be safe.
+			--> nothing will happen on the server as a result of the HTTP request.
+
+		* There is no guarantee that a safe method won't cause an action to be performed.
+
+	(GET)
+		+ used to ask a server to send a resource.
+
+	(HEAD)
+		+ behaves exactly like the GET method, but the server returns only the headers in the response.(No entitiy body is ever returned.)
+
+	(PUT)
+		+ writes documents to a server.
+		+ idempotent
+		* Since PUT allows you to change content, many web servers require you to log in with a password before you can perform a PUT.
+
+	(POST)
+		+ send input data to the server.
+
+	(TRACE)
+		+ allows clients to see how its request looks when it finally makes it to the server.
+		+ No entity body can be sent with a TRACE request.
+
+	(OPTIONS)
+		+ asks the server to tell us about the various supported capabilities of the web server.
+		+ ask a server about what methods it supports in general or for particular resources.
+
+	(DELETE)
+		+ asks the server to delete the resources specified by the request URL.
+
+	(Extension Methods)
+		+ HTTP was designed to be field-extensible, so new features would not cause older software to fail.
+		+ methods that are not defined in the HTTP/1.1 specification.
+			Ex) Example web publishing extension methods
+				(Method)	(Description)
+				LOCK 		Allows a user to "lock" a resource (lock a resource while editing to prevent others from editing it)
+				MKCOL		Allows a user to create a resource
+				COPY 		Facilitates copying resources on a server
+				MOVE 		Moves a resource on a server.
+
+<Status Codes>
+	(100-199: Informational Status Codes)
+		+ HTTP/1.1 introduced the informational status codes to the protocol.
+			Ex) Informational status codes and reason phrases
+				(Status Code)	(Reason Phrase)		(Meaning)
+				100 			Continue			Initial part of request was received, and the client should continue.
+				101 			Switching Protocols	The server is changing protocols.
+
+	(200-299: Success Status Codes)
+		Status Code 	Reson phrase 			Meaning
+		200 			OK 						Request is okay, entire body contains requested resource.
+		201 			Created					(e.g.PUT) with the Location header
+		202 			Accepted 				Accepted, but the server has not yet performed any action with it.
+		203 			Non-Authoritative Info 	
+		204 			No Content 				Headers and a status line, but no entity body.(Used for update browsers)
+		205 			Reset Content 			Tells the browser to clear any HTML form elements on the current page
+		206 			Partial Content 		range request success(response - Content-Range, Date, Etag or Content-Location Header)
+
+	(300-399: Redirection Status Codes)
+		+ Tells clients to use alternate locations for the resources instead of the content.
+
+		Status Code 	Reason phrase 			Meaning
+		300 			Multiple Choices 		returned with a list of options(multiple resources). 
+		301 			Moved Permanently 		used when requested URL moved. Response contains URL, where the resource now resides.
+		302 			Found 					
+		303 			See Other 				tells the client that resource should be fetched using a different URL.
+		304 			Not Modified 			response should not contain an empty body.
+		305 			Use Proxy 				resource must be accessed through a proxy.
+		306 			(Unused) 				Not currently used.
+		307 			Temporary Redirect 		client should use the URL in the Location header to locate the resource temporarily.
+
+	(400-499: Client Error Status Codes)
+		Status Code 	Reason phrase 			Meaning
+		400 			Bad Request 			malformed request
+		401 			Unauthorized 			headers failed authentication
+		402 			Payment Required 		(Currently this status code is not used)
+		403 			Forbidden 				refused by the server. Can include an entity body describing the reason.
+		404 			Not Found 				server cannot find the requested URL
+		405 			Method Not Allowed 		method not supported for the requested URL
+		406 			Not Acceptable 			server has no resource matching the URL that is acceptable for the client.
+		407 			Proxy Auth Required 	Like the 401 status code, but used for proxy servers that require auth for a resource.
+		408 			Request Timeout 		close down the connection. (client takes too long to complete its request)
+		409 			Conflict 				when a request could cause a conflict.
+		410 			Gone 					similar to 404(notifies clients when a resource has been removed.)
+		411 			Length Required 		server requires a Content-Length header in the request message.
+		412 			Precondition Failed 	when a conditional request and one of the condition fails.
+		413 			Request Entity Large 	when a client sends an entity body that is larger than the server can process.
+		414 			Request URL Long 		when a client sends a request with a URL that is larger than the server can process.
+		415 			Unsupported Media Type 	when a client sends an entity of a content type that server does not understand.
+		416 			Range not Satisfiable	requested a range of a given resource that range was invalid or could not be met.
+		417 			Expectation Failed		contained an expectation in the Expect request header that server could not satisfy.
+
+	(500-599: Server Error Status Codes)
+		Status Code  Reason phrase 				Meaning
+		500 		 Internal Server Error 		server encounters an error that prevents it from servicing the request.
+		501 		 Not Implemented 			request is beyond the server's capabilities(request method that server doesn't support)
+		502 		 Bad Gateway				server acting as a proxy or gateway encounters a bogus response from the next link
+		503 		 Service Unavailable 		server currently cannot service the request
+		504 		 Gateway Timeout 			simliar to 408 code, except the response is coming from a gateway or proxy 
+		505 		 HTTP Versio Not Supported	when a server receives a request in a version that it can't support.
+
+<Headers>
+	- General Headers
+		+ headers used by both clients and servers.
+			Ex) Date header: a general-purpose header that allows both sides to indicate the time and date at which the message was constructed.
+				Date: Tue, 3 Oct 1947 02:16:00 GMT
+	
+	- Request Headers
+		+ specific to request messages.
+		+ provides extra info to servers
+			Ex) what type of data the client wants
+				Accept: */* (client will accept any media type that matches its request)
+
+	- Response Headers
+		+ Response messages have their own set of headers that provide info to the client
+			Ex) Server: Tiki-Hut/1.0 (tells the client that is talking to a Version 1.0 Tiki-Hut server)
+
+	- Entity Headers
+		+ deals with the entity body.
+			Ex) Content-Type: text/html; charset=iso-latin-1 (data is an HTML document in the iso-latin-1 character set)
+
+	- Extension Headers
+		+ nonstandard headers that have been created by application developers, not yet added to the sanctioned HTTP specification.
+
+<General Headers>
+	- provides basic information about a message.
+	- General information headers
+		Connection 			Allows clients and servers to specify options about the request / response messages.
+		Date 				Provides a date and time stamp telling when the message was created
+		MIME-Version 		Gives the version of MIME that the sender is using
+		Trailer 			Lists the set of headers that are in the trailer of a message encoded with the chunked transfer encoding.
+		Transfer-Encoding 	Tells the receiver what encoding was performed on the mssage to be transported safely
+		Upgrade 			gives a new version or protocol that the sender would like to upgrade to using
+		Via 				shows what intermediaries (proxies, gateways) the message has gone through
+
+	- General caching headers
+		+ General Caching Headers
+			Cache-Control 		Used to pass caching directions along with the message
+			Pragma 				Another way to pass directions along with the message, though not specific to caching
+
+<Request Headers>
+	- headers that make sense only in a request message.
+	- give info about who or what is sending the request, where the request originated, what the preferences and capabilities of the client are.
+	- Request information headers
+		Client-IP 		provides the IP address of the machine on which the client is running
+		From 			Provides the email address of the client's user
+		Host 			gives the hostname and port of the server to which the request is being sent
+		Referer 		provides the url of the document that contains the current request URI
+		UA-Color 		info about the color capabilities of the client machine's display
+		UA-CPU 			type or manufacturer of the client's CPU
+		UA-Disp 		info about the client's display capabilities
+		UA-OS 			name and version of OS running on the client machine
+		UA-Pixels 		pixel info about the client machine's display
+		User-Agent 		tells the server the name of the application making the request
+
+		* the UA-* headers can be considered harmful.
+
+	- Accpet headers
+		+ gives the client a way to tell servers their preferences and capabilities: what they want, what they can use, what they don't want.
+		+ server does not waste their time and bandwidth sending something the client can't use.
+		+ Accept headers
+			Accept 				what media types are okay to send
+			Accept-Charset		what charsets are okay to send
+			Accept-Encoding 	what encodings are okay to send
+			Accept-Language 	what languages are okay to send
+			TE 					what extension transfer codings are okay to use
+
+	- Conditional request headers
+		+ when clients want to put some restrictions on a request, requiring the server to make sure that the conditions are true before satisfying the request.
+		+ Conditional request headers
+			Expect 				allows a client to list server behaviors that it requires for a request
+			If-Match 			gets the document if the entity tag matches the current entity tag for the document
+			If-Modified-Since 	restricts the request unless the resource has been modified since the spcified date
+			If-None-Match 		gets the document if the entity tags supplied do not match those of the current document
+			If-Range			conditional request for a range of a document
+			If-Unmodified-Since	restricts the request unless the resource has not been modified since the spcified date
+			Range 				requests a spcific range of a resource, if the server supports range requests
+
+	- Request Security headers
+		+ Request security headers
+			Authorization 		contains the data the client is supplying to the server to authenticate itself
+			Cookie 				used by clients to pass a token to the server-not a true security header
+			Cookie2 			used to note the version of cookies a requestor supports
+
+	- Proxy request headers
+		+ Proxy request headers
+			Max-Forwards 		max number of times a request should be forwarded to another proxy / gateway on its way to the server.
+			Proxy-Authorization	same as authorization, but used when authenticating with a proxy
+			Proxy-Connection 	same as connection, but used when establishing connections with a proxy
+
+<Response Headers>
+	- response messages have their own set of response headers.
+	- provides clients with extra information, such as who is sending the response, the capabilities of the responder, special instructions regarding the response.
+	- Response informational headers
+		Age 		how old the response is
+		Public 		list of request methods that server supports for its resources
+		Retry-After	date or time to try back, if a resource is unavailable
+		Server 		name and version of the server's application software
+		title 		title as given by the HTML document source
+		Warning 	more detailed warning message than what is in the reason phrase
+
+	- Negotiation headers
+		+ HTTP/1.1 provides servers and clients with the ability to negotiate for a resource if multiple representations are available.
+		+ Negotiation headers
+			Accept-Ranges 		type of ranges that a server will accept for this resource
+			Vary 				list of other headers that the server looks at and that may cause the response to vary
+
+	- Response security headers
+		Proxy-Authenticate 		list of challenges for the client from the proxy
+		Set-Cookie 				not a true security header, but has security implications; used to set a token on the client side
+		Set-Cookie2				similarto Set-Cookie
+		WWW-Authenticate 		list of challenges for the client from the server
+
+<Entity Headers>
+	- provides a broad range of information about the entity and its content, from information about the type of the object to valid request methods that can be made on the resource.
+	- Entity informational headers
+		Allow 		Lists the request methods that can be performed on this entity
+		Location 	tells the client where the entity really is located; used in directing the receiver to a location for the resource.
+
+	- Content headers
+		+ provides specific information about the content of the entity, revealing is type, size, and other info useful for processing it.
+			Ex) web browser can look at the content type returned and know how to display the object
+
+		+ Content headers
+			Content-Base 		base url for resolving relative URLs within the body
+			Content-Encoding 	any encoding that was performed on the body
+			Content-Language 	natural language that is best used to understand the body
+			Content-Length 		lenght or size of the body
+			Content-Location 	where the resource actually is located
+			Content-MD5 		MD5 checksum of the body
+			Content-Range 		range of bytes that this entity represents from the entire resource
+			Content-Type 		type of object that this body is
+
+	- Entity caching headers
+		ETag 			entity tag associated with this entity
+		Expires 		date and time at which this entity will no longer be valid and will need to be fetched from the original source
+		Last-Modified 	last date and time when this entity changed
+		
+
+
+
 
 
 
