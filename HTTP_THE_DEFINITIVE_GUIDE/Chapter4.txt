@@ -25,18 +25,144 @@
 	- IP Packets(IP Datagrams): TCP sends its data in little chunks called IP Packets.
 	- HTTP is the top layer in a "protocol stack" of "HTTP over TCP over IP".
 	- A secure variant, HTTPs, inserts a cryptographic encryption layer(called TLS or SSL) between HTTP and TCP.
+
 	(HTTP and HTTPS network protocol stacks)
-		
 		(HTTP)
-		[		 HTTP 		 ]
-		[ 		 TCP 		 ]
-		[ 		 IP 		 ]
-		[ Network Interfaces ]
+		[		 HTTP 		 ] // Application Layer
+		[ 		 TCP 		 ] // Transport Layer
+		[ 		 IP 		 ] // Network Layer
+		[ Network Interfaces ] // Data Link Layer
 
 		(HTTPS)
-		[		 HTTP 		 ]
-		[	  TSL or SSL 	 ]
-		[ 		 TCP 		 ]
-		[ 		 IP 		 ]
-		[ Network Interfaces ]
+		[		 HTTP 		 ] // Application Layer
+		[	  TSL or SSL 	 ] // Security Layer
+		[ 		 TCP 		 ] // Transport Layer
+		[ 		 IP 		 ] // Network Layer
+		[ Network Interfaces ] // Data Link Layer
+
+	- when HTTP wants to transmit a message,
+		+ it streams the contents of the message data, in order, through an open TCP connection.
+		+ TCP taks the stream of data, chops up the data stream into chunks called "segments"
+		+ transports the segments across the internet inside evenlopes called IP Packets.
+		(This is all handled by the TCP/IP software; the HTTP programmer sees none of it.)
+
+	- Each TCP segment is carried by an IP packet from one IP address to another IP address.
+		+ Each of the IP packets contains:
+			1. An IP Packet header (usually 20 bytes)
+				-> contains the source and destination IP address, the size, and other flags.
+			2. A TCP segment header (usually 20 bytes)
+				-> contains TCP port numbers, TCP control flags, and numeric values used for data ordering and integrity checking.
+			3. A chunk of TCP data (0 or more bytes)
+
+
+<Keeping TCP Connections Straight>
+	- TCP keeps all connections straight through port numbers.
+		(A computer might have several TCP connections open at any one time)
+	- TCP connection is distinguished by four values:
+		<source-IP-address, source-port, destination-IP-address, destination-port>
+		* Two different TCP connectinos are not allowed to have the same values for all four address components.
+
+<Programming with TCP Sockets>
+	- Sockets API hides all the details of TCP and IP from the HTTP programmers.
+	
+	(Common socket interface functions for programming TCP connections)
+	[Sockets API call]				[Description]
+	s=socket(<parameters>)			Creates a new, unnamed, unattached socket.
+	bind(s, <local IP:port>)		Assigns a local port number and interface to the socket.
+	connect(s, <remote IP:port>)	Establishes a TCP connection to a local socket and a remote host and port.
+	listen(s,...) 					Marks a local socket as legal to accept connections.
+	s2=accept(s) 					Waits for someone to establish a connection to a local port.
+	n=read(s, buffer, n)			Tries to read n bytes from the socket into the buffer.
+	n=write(s, buffer, n)			Tries to write n bytes from the buffer into the socket.
+	close(s)						Completely closes the TCP connection.
+	shutdown(s, <side>)				Closes just the input or the output of the TCP connection.
+	getsockopt(s, ...)				Reads the value of an internal socket configuration option.
+	setsockopt(s, ...)				Changes the value of an internal socket configuration option.
+
+<TCP Performance Considerations>
+	- HTTP is layered directly on TCP
+	- the performance of HTTP transactions depends critically on the performance of the underlying TCP plumbing.
+	- transaction processing time can be quite small compared to the time required to set up TCP connections and transfer the request and response mssages.
+		* most HTTP delays are caused by TCP network delays.
+
+	(Possible causes of delay in an HTTP transaction)
+	1. If the hostname in the URI was not recently visited, it may take tens of seconds to convert the hostname from a URI into an IP address using the DNS resolution infrastructure.
+	2. Connection setup delay occurs for every new TCP connection. This may take time when hundreds of HTTP transactions are made.
+	3. When connection is established, the client sends the HTTP request over the newly established TCP pipe. It takes time for the request message to travel over the Internet and get processed by the server.
+	4. The web server then writes back the HTTP response, which also takes time.
+
+	* Magnitude of TCP network delays depends on hardware speed, the load of the network and server, the size of the request and response messages, and the distance between client and server.
+	* Delays also are affected by techinal intricacies of the TCP protocol.
+
+(Common Delays of TCP)
+<TCP connection Handshake Delays>
+	- When a new TCP connection, TCP software exchanges a series of IP packets to negotiate the terms of the connection.
+		-> These exchanges can degrade HTTP performance if the connections are used for small data transfers.
+
+	
+
+	(TCP requires two packet transfers to set up the connection before it can send data)
+	[Client]							[Server]
+
+			(Connection handshake delay)
+	Connect ----------- SYN ----------->
+			<-------- SYN-ACK ----------
+			
+				  (Data Transfer)
+			---- ACK GET / HTTP... ---->
+			<--- HTTP/1.1 304 Not .. ---	
+
+	(Steps)
+		1. To request a new TCP connection, the client sends a small TCP packet (usually 40-60 bytes) to the server. The packet has a special "SYN"(Synchronize Sequence Numbers) flag set, meaning a connection request.
+		2. If the server acceps the connection, it computes some connection parameters, and sends a TCP packet back to the client, with both the "SYN" and "ACK"(acknowledgment) flag set, indicating that the connection request is accepted.
+		3. Finally, client sends an acknowledgment back to the server, letting it know that the connection was established successfully. Modern TCP stacks let the client send data in this acknowledgment packet.
+
+		* HTTP programmer never sees these packets - they are managed invisibly by the TCP/IP software.(They onoly see the delay when creating a new TCP connection)
+
+	- SYN / SYN+ACK Handshake
+		+ creates a measurable delay when HTTP transactions do not exchange much data. 
+		+ The TCP connect ACK packet often is large enough to carry the entire HTTP request message.
+			(IP packets are usually a few hundred bytes for Internet traffic and around 1,500 bytes for local traffic.)
+		+ Many HTTP server response messages fit into a single IP pakcet.
+
+	- Small HTTP transactions may spend 50% or more of their time doing TCP setup.
+
+<Delayed Acknowledgments>
+	- TCP implements its own acknowledgment scheme to guarantee successful data delivery. (Internet itself does not guarantee reliable packet delivery)
+	- Each TCP segment gets a sequence number and a data-integrity checksum. If the sender does not receive an acknowledgment(receiver of each segment returns small acknowledgment packets back to the sender which segments have been received intact) within a specified window of time, the sender concludes the pakcet was destroyed or corrupted and resends the data.
+	- TCP allows acknowledgments to "piggyback" on outgoing data packets heading in the same direction.
+	- To increase the chances that an acknowledgment will find a data packet headed in the same direction, many TCP stacks implement a "delayed acknowledgment" algorithm.
+		+ holds outgoing acknowledgments in a buffer for a certain window of time (usually 100-200 milliseconds), looking for an outgoing data packet on which to piggyback.
+	- Frequently, disabled acknowledgment algorithms introduce significant delays.
+
+<TCP Slow Start>
+	- TCP Slow Start: TCP connections "tune" themselves over time, initially limiting the maximum speed of the connection and increasing the speed over time as data is transmitted successfully.
+		+ Used to prevent sudden overloading and congestion of the internet.
+		+ If an HTTP transaction has a large amount of data to send, it cannot send all the packets at once.
+		+ "opening the congestion window": send one packet and wait for an ACK, then it can send two packets, each of which must be acknowledged, which allows four packets, and etc.
+
+		* New connections are slower than "tuned" connections that already have exchanged a modest amount of data.
+
+<Nagle's Alogirhtm and TCP_NODELAY>
+	- Because each TCP segment carries at least 40 bytes of flags and headers, network performance can be degraded severely if TCP sends large numbers of packets containing small amounts of data.
+
+	- Nagle's Algorithm: Bundles up a large amount of TCP data before sending a packet, aiding network efficiency.
+	- It discourages the sending of segments that are not full-size (a max size packet is around 1,500 bytes on a LAN, or a few hundred bytes across the Internet.)
+	- It allows sending a non-full-size packet only if all other packets have been acknowledged.
+	- If other packets are still in flight, the partial data is buffered.
+	- Buffered data is sent only when pending packets are acknowledged or when the buffer has accumulated enough data to send a full packet.
+
+	1) Small HTTP messages may be delayed waiting for additional data that will never arrive.
+	2) Interacts poorly with disabled aknowledgments - it will hold up the sending of data until an acknowledgement arrives, but the ACK itself will be delayed 100-200ms by the delayed ACK algorithm.
+
+	* HTTP apps often disable Nagle's algorithm to improve performance
+		+ set the TCP_NODELAY parameter on their stacks. (Must ensure writing large chunks of data to TCP so you don't create a flurry of small packets.)
+
+<TIME_WAIT Accumulation and Port Exhaustion>
+
+
+
+
+
+
 
