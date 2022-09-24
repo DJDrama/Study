@@ -1,1 +1,42 @@
 [Chapter 4] Connection Management
+
+<TCP Connections>
+	- client app can open a TCP/IP connection to a server app.
+		* Once the connection is established, message exchanged between the client's and server's computers will never be lost, damaged, or received out of order.
+		(but communication can break down)
+
+		Ex) Web browsers talk to web servers over TCP connections.
+			http://www.joes-hardware.com:80/power-tools.html
+			1. The browser extracts the hostname(www.joes-hardware.com).
+			2. The browser looks up the IP address for this hostname (DNS). (202.43.78.3)
+			3. The browser gets the port number (80).
+			4. The browser makes a TCP connection to 202.43.78.3 port 80.
+			5. The browser sends an HTTP GET request message to the server.
+			6. The browser reads the HTTP response message from the server.
+			7. The browser cloes the connection.
+
+<TCP Reliable Data pipes>
+	- HTTP connections are nothing more than TCP connections.
+	- TCP connections are the reliable connections of the Internet.
+	(Basics)
+		+ TCP gives HTTP a reliable bit pipe.
+
+<TCP Streams Are Segmented and Shipped by IP Packets)
+	- IP Packets(IP Datagrams): TCP sends its data in little chunks called IP Packets.
+	- HTTP is the top layer in a "protocol stack" of "HTTP over TCP over IP".
+	- A secure variant, HTTPs, inserts a cryptographic encryption layer(called TLS or SSL) between HTTP and TCP.
+	(HTTP and HTTPS network protocol stacks)
+		
+		(HTTP)
+		[		 HTTP 		 ]
+		[ 		 TCP 		 ]
+		[ 		 IP 		 ]
+		[ Network Interfaces ]
+
+		(HTTPS)
+		[		 HTTP 		 ]
+		[	  TSL or SSL 	 ]
+		[ 		 TCP 		 ]
+		[ 		 IP 		 ]
+		[ Network Interfaces ]
+
